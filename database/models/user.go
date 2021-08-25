@@ -11,11 +11,6 @@ type User struct {
 	Name        string `json:"name"`
 }
 
-//type UserDB interface {
-//	Insert(db *sql.DB) error
-//	SelectAll(db *sql.DB) ([]User, error)
-//}
-
 func Insert(db *sql.DB, user User) error {
 	_, err := db.Exec(
 		"INSERT INTO user VALUES (?, ?, ?, ?)",
@@ -28,9 +23,19 @@ func Insert(db *sql.DB, user User) error {
 	return err
 }
 
+func UpdateStatus(db *sql.DB, user User) error {
+	_, err := db.Exec(
+		"UPDATE user SET isDeleted = not isDeleted WHERE userID = ? and workspaceID = ?",
+		user.ID,
+		user.WorkspaceID,
+	)
+
+	return err
+}
+
 func SelectAll(db *sql.DB) ([]User, error) {
 	var users []User
-	results, err := db.Query("SELECT id, workspaceID, isDeleted, name FROM user")
+	results, err := db.Query("SELECT userID, workspaceID, isDeleted, name FROM user")
 	if err != nil {
 		return nil, err
 	}

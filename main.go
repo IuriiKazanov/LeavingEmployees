@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	slackSDK "github.com/slack-go/slack"
 
-	"LeavingEmployees/slack"
-	_ "github.com/go-sql-driver/mysql"
+	"LeavingEmployees/bot"
 )
 
 func main() {
@@ -38,9 +38,10 @@ func main() {
 	token := os.Getenv("TOKEN")
 	api := slackSDK.New(token)
 
+	channelID := os.Getenv("CHANNEL_ID")
+
 	s := gocron.NewScheduler()
-	err = s.Every(1).Minute().Do(slack.SendMessage, api, mysqlConn)
-	//err = s.Every(1).Minute().Do(slack.SendSlackNotification, "https://hooks.slack.com/services/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")
+	err = s.Every(1).Minute().Do(bot.FindLeavingEmployees, mysqlConn, api, channelID)
 	if err != nil {
 		log.Error(err.Error())
 		return

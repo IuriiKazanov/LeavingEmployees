@@ -1,9 +1,7 @@
 package slack
 
 import (
-	"LeavingEmployees/database/models"
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -16,34 +14,14 @@ type slackRequestBody struct {
 	Text string `json:"text"`
 }
 
-func SendMessage(api *slack.Client, db *sql.DB) error {
-	users, err := api.GetUsers()
+func SendMessage(api *slack.Client, channelID, text string) error {
+	channelID, timestamp, err := api.PostMessage(channelID, slack.MsgOptionText(text, false))
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return err
 	}
-	for _, user := range users {
-		fmt.Printf("ID: %s, Name: %s, Deleted: %v\n", user.ID, user.Name, user.Deleted)
-		user := models.User{
-			ID:          user.ID,
-			WorkspaceID: user.TeamID,
-			IsDeleted:   user.Deleted,
-			Name:        user.Name,
-		}
-		err := models.Insert(db, user)
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-	}
 
-	channelID, timestamp, err := api.PostMessage("U01U3T9324X", slack.MsgOptionText("Hello", false))
-
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return err
-	}
-	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
+	fmt.Printf("Message successfully sent to channel %s at %s\n", channelID, timestamp)
 	return nil
 }
 
