@@ -1,48 +1,50 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"database/sql"
 	"os"
 
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
-	"github.com/slack-go/slack"
+	log "github.com/sirupsen/logrus"
+	slackSDK "github.com/slack-go/slack"
+
+	"LeavingEmployees/slack"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
 	err := godotenv.Load(".env")
-
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		log.Error("Error loading .env file")
+		return
 	}
+
+	dbConnectionString := os.Getenv("DB_CONNECTION_STRING")
+	mysqlConn, err := sql.Open("mysql", dbConnectionString)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	defer func() {
+		err := mysqlConn.Close()
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+	}()
+
 	token := os.Getenv("TOKEN")
-	api := slack.New(token)
+	api := slackSDK.New(token)
 
 	s := gocron.NewScheduler()
-	err = s.Every(1).Minute().Do(sendMessage, api)
+	err = s.Every(1).Minute().Do(slack.SendMessage, api, mysqlConn)
+	//err = s.Every(1).Minute().Do(slack.SendSlackNotification, "https://hooks.slack.com/services/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")
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Error(err.Error())
+		return
 	}
+
 	<-s.Start()
-}
-
-func sendMessage(api *slack.Client) error {
-	users, err := api.GetUsers()
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return err
-	}
-	for _, user := range users {
-		fmt.Printf("ID: %s, Name: %s, Deleted: %v\n", user.ID, user.Name, user.Deleted)
-	}
-
-	channelID, timestamp, err := api.PostMessage("U01U3T9324X", slack.MsgOptionText("Hello", false))
-
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return err
-	}
-	fmt.Printf("Message successfully sent to channel %s at %s", channelID, timestamp)
-	return nil
 }
