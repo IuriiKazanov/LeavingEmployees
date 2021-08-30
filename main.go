@@ -8,7 +8,7 @@ import (
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	slackSDK "github.com/slack-go/slack"
+	"github.com/slack-go/slack"
 
 	"LeavingEmployees/bot"
 )
@@ -36,7 +36,7 @@ func main() {
 	}()
 
 	token := os.Getenv("TOKEN")
-	api := slackSDK.New(token)
+	api := slack.New(token)
 
 	channelID := os.Getenv("CHANNEL_ID")
 

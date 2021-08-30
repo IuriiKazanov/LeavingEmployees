@@ -5,13 +5,12 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	slackSDK "github.com/slack-go/slack"
+	"github.com/slack-go/slack"
 
 	"LeavingEmployees/database/models"
-	"LeavingEmployees/slack"
 )
 
-func FindLeavingEmployees(dbConnection *sql.DB, api *slackSDK.Client, channelID string) error {
+func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID string) error {
 	usersDB, err := models.SelectAll(dbConnection)
 	if err != nil {
 		log.Error(err)
@@ -70,7 +69,7 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slackSDK.Client, channelID 
 		message += fmt.Sprintf("%v quit!", leavingUsers[len(leavingUsers) - 1])
 	}
 
-	err = slack.SendMessage(api, channelID, message)
+	err = SendMessage(api, channelID, message)
 	if err != nil {
 		log.Error(err)
 	}
