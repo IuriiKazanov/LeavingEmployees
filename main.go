@@ -14,6 +14,9 @@ import (
 )
 
 func main() {
+	log.SetReportCaller(true)
+	log.SetFormatter(&log.JSONFormatter{})
+
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Error("Error loading .env file")
@@ -23,14 +26,14 @@ func main() {
 	dbConnectionString := os.Getenv("DB_CONNECTION_STRING")
 	mysqlConn, err := sql.Open("mysql", dbConnectionString)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 
 	defer func() {
 		err := mysqlConn.Close()
 		if err != nil {
-			log.Error(err.Error())
+			log.Error(err)
 			return
 		}
 	}()
@@ -43,7 +46,7 @@ func main() {
 	s := gocron.NewScheduler()
 	err = s.Every(1).Minute().Do(bot.FindLeavingEmployees, mysqlConn, api, channelID)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err)
 		return
 	}
 

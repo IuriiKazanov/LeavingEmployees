@@ -25,7 +25,7 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID str
 
 	var leavingUsers []string
 	for _, userSlack := range usersSlack {
-		if !userSlack.IsAppUser {
+		if userSlack.IsAppUser {
 			continue
 		}
 		isUserContains := false
@@ -63,10 +63,10 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID str
 	case 1:
 		message = fmt.Sprintf("%v quit!", leavingUsers[0])
 	default:
-		for _, user := range leavingUsers[:len(leavingUsers) - 1] {
+		for _, user := range leavingUsers[:len(leavingUsers)-1] {
 			message += user + ", "
 		}
-		message += fmt.Sprintf("%v quit!", leavingUsers[len(leavingUsers) - 1])
+		message += fmt.Sprintf("%v quit!", leavingUsers[len(leavingUsers)-1])
 	}
 
 	err = SendMessage(api, channelID, message)
