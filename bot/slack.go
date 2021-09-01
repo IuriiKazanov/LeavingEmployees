@@ -21,7 +21,7 @@ func SendMessage(api *slack.Client, channelID, text string) error {
 		return err
 	}
 
-	fmt.Printf("Message successfully sent to channel %s at %s\n", channelID, timestamp)
+	log.Infof("Message successfully sent to channel %s at %s\n", channelID, timestamp)
 	return nil
 }
 
