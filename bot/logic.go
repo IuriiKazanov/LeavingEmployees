@@ -48,6 +48,7 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID str
 				WorkspaceID: userSlack.TeamID,
 				IsDeleted:   userSlack.Deleted,
 				Name:        userSlack.Name,
+				ImageUrl:    userSlack.Profile.Image192,
 			}
 			err := models.Insert(dbConnection, user)
 			if err != nil {

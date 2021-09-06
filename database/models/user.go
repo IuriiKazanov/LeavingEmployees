@@ -9,15 +9,17 @@ type User struct {
 	WorkspaceID string `json:"workspaceID"`
 	IsDeleted   bool   `json:"isDeleted"`
 	Name        string `json:"name"`
+	ImageUrl    string `json:"imageUrl"`
 }
 
 func Insert(db *sql.DB, user User) error {
 	_, err := db.Exec(
-		"INSERT INTO user VALUES (?, ?, ?, ?)",
+		"INSERT INTO user VALUES (?, ?, ?, ?, ?)",
 		user.ID,
 		user.WorkspaceID,
 		user.IsDeleted,
 		user.Name,
+		user.ImageUrl,
 	)
 
 	return err
@@ -35,14 +37,14 @@ func UpdateStatus(db *sql.DB, user User) error {
 
 func SelectAll(db *sql.DB) ([]User, error) {
 	var users []User
-	results, err := db.Query("SELECT userID, workspaceID, isDeleted, name FROM user")
+	results, err := db.Query("SELECT userID, workspaceID, isDeleted, name, COALESCE(imageUrl, '') FROM user")
 	if err != nil {
 		return nil, err
 	}
 
 	for results.Next() {
 		var user User
-		err = results.Scan(&user.ID, &user.WorkspaceID, &user.IsDeleted, &user.Name)
+		err = results.Scan(&user.ID, &user.WorkspaceID, &user.IsDeleted, &user.Name, &user.ImageUrl)
 		if err != nil {
 			return nil, err
 		}
