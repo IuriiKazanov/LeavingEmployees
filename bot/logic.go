@@ -25,7 +25,7 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID str
 
 	var leavingUsers []string
 	for _, userSlack := range usersSlack {
-		if userSlack.IsAppUser {
+		if userSlack.IsAppUser || userSlack.IsBot {
 			continue
 		}
 		isUserContains := false
