@@ -11,38 +11,27 @@ import (
 )
 
 func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID string) error {
-	usersDB, err := models.SelectAll(dbConnection)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
 	usersSlack, err := api.GetUsers()
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
+	usersDB, err := models.SelectAll(dbConnection)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	usersDBMap := make(map[string]models.User)
+	for _, userDB := range usersDB {
+		usersDBMap[userDB.ID] = userDB
+	}
+
 	var leavingUsers []string
 	for _, userSlack := range usersSlack {
-		if userSlack.IsAppUser || userSlack.IsBot {
-			continue
-		}
-		isUserContains := false
-		for _, userDB := range usersDB {
-			if userSlack.ID == userDB.ID {
-				isUserContains = true
-				if userSlack.Deleted && !userDB.IsDeleted {
-					leavingUsers = append(leavingUsers, userDB.Name)
-					err := models.UpdateStatus(dbConnection, userDB)
-					if err != nil {
-						log.Error(err)
-					}
-					break
-				}
-			}
-		}
-		if !isUserContains {
+		userDB, ok := usersDBMap[userSlack.ID]
+		if !ok {
 			user := models.User{
 				ID:          userSlack.ID,
 				WorkspaceID: userSlack.TeamID,
@@ -51,6 +40,14 @@ func FindLeavingEmployees(dbConnection *sql.DB, api *slack.Client, channelID str
 				ImageUrl:    userSlack.Profile.Image192,
 			}
 			err := models.Insert(dbConnection, user)
+			if err != nil {
+				log.Error(err)
+			}
+			continue
+		}
+		if userSlack.Deleted && !userDB.IsDeleted {
+			leavingUsers = append(leavingUsers, userDB.Name)
+			err := models.UpdateStatus(dbConnection, userDB)
 			if err != nil {
 				log.Error(err)
 			}
