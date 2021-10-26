@@ -2,13 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"os"
-
+	"github.com/go-co-op/gocron"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
+	"os"
+	"time"
 
 	"LeavingEmployees/bot"
 )
@@ -43,12 +43,11 @@ func main() {
 
 	channelID := os.Getenv("CHANNEL_ID")
 
-	s := gocron.NewScheduler()
-	err = s.Every(1).Minute().Do(bot.FindLeavingEmployees, mysqlConn, api, channelID)
+	s := gocron.NewScheduler(time.UTC)
+	_, err = s.Cron("0 0 * * *").Do(bot.FindLeavingEmployees, mysqlConn, api, channelID)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-
-	<-s.Start()
+	s.StartBlocking()
 }
