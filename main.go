@@ -49,5 +49,6 @@ func main() {
 		log.Error(err)
 		return
 	}
+
 	s.StartBlocking()
 }

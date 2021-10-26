@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS user
     workspaceID varchar(255) NOT NULL,
     isDeleted bool NOT NULL,
     name varchar(255) NOT NULL,
+    imageUrl VARCHAR(255) NULL,
     PRIMARY KEY (userID, workspaceID)
 );
